@@ -16,7 +16,7 @@ class ListarJogos(HTTPMethodView):
                 'console': jogo['console']
             })
         return json(lista_jogos)
-    
+
     async def post(self, request):
         db.jogos.insert_one(request.json)
         return json({'message': 'Jogo adicionado'})
