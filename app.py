@@ -1,9 +1,9 @@
-from sanic import Sanic
-from sanic.response import json
-from jogos.bp import jogos_bp, ListarJogos, ListarJogo
 import os
+from sanic import Sanic
+from jogos.bp import jogos_bp
 from dotenv import load_dotenv
 from tortoise.contrib.sanic import register_tortoise
+from index.views import Index
 
 load_dotenv()
 
@@ -14,9 +14,4 @@ register_tortoise(
     app, db_url=os.getenv('CONNECTION_STRING'), modules={'models': ['jogos.models']}, generate_schemas=True
 )
 
-jogos_bp.add_route(ListarJogos.as_view(), '/')
-jogos_bp.add_route(ListarJogo.as_view(), '/<pk:int>')
-
-@app.route('/')
-async def hello(request):
-    return json({'message': 'Hello world!'})
+app.add_route(Index.as_view(), '/')
