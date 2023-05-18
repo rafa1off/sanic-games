@@ -3,9 +3,18 @@ from sanic.response import json
 from jogos.models import Jogos
 from sanic.exceptions import NotFound
 
+
 class ListarJogos(HTTPMethodView):
     async def get(self, request):
-        return json([dict(jogo) for jogo in await Jogos.all()])
+        if request.args.get('limite') and request.args.get('pagina'):
+            limite = int(request.args.get('limite'))
+            pagina = int(request.args.get('pagina')) - 1
+            jogos = await Jogos.all().limit(limite).offset(pagina).values()
+            return json([jogo for jogo in jogos])
+        elif request.args.get('limite'):
+            limite = int(request.args.get('limite'))
+            jogos = await Jogos.all().limit(limite).values()
+            return json([jogo for jogo in jogos])
 
     async def post(self, request):
         await Jogos(nome=request.json['nome'],
@@ -41,3 +50,16 @@ class ListarJogo(HTTPMethodView):
             return json({'message': f'Jogo {jogo.nome} removido'})
         else:
             raise NotFound('Id not found')
+
+
+class BuscarJogo(HTTPMethodView):
+    async def get(self, request):
+        if request.args.get('nome'):
+            jogos = await Jogos.filter(nome__icontains=request.args.get('nome')).values()
+            return json([jogo for jogo in jogos])
+        elif request.args.get('categoria'):
+            jogos = await Jogos.filter(categoria__icontains=request.args.get('categoria')).values()
+            return json([jogo for jogo in jogos])
+        elif request.args.get('console'):
+            jogos = await Jogos.filter(console__icontains=request.args.get('console')).values()
+            return json([jogo for jogo in jogos])

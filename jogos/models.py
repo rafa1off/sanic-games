@@ -1,6 +1,7 @@
 from tortoise.models import Model
 from tortoise import fields
 
+
 class Jogos(Model):
     nome = fields.CharField(max_length=20)
     categoria = fields.CharField(max_length=20)
