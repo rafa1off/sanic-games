@@ -6,15 +6,9 @@ from sanic.exceptions import NotFound
 
 class ListarJogos(HTTPMethodView):
     async def get(self, request):
-        if request.args.get('limite') and request.args.get('pagina'):
-            limite = int(request.args.get('limite'))
-            pagina = int(request.args.get('pagina')) - 1
-            jogos = await Jogos.all().limit(limite).offset(pagina).values()
-            return json([jogo for jogo in jogos])
-        elif request.args.get('limite'):
-            limite = int(request.args.get('limite'))
-            jogos = await Jogos.all().limit(limite).values()
-            return json([jogo for jogo in jogos])
+        query = Jogos.all
+        jogos = await paginar(request, query)
+        return json([dict(jogo) for jogo in jogos])
 
     async def post(self, request):
         await Jogos(nome=request.json['nome'],
@@ -44,7 +38,7 @@ class ListarJogo(HTTPMethodView):
             raise NotFound('Id not found')
 
     async def delete(self, request, pk):
-        jogo = await Jogos.get(pk=pk)
+        jogo = await Jogos.get_or_none(pk=pk)
         if jogo is not None:
             await jogo.delete()
             return json({'message': f'Jogo {jogo.nome} removido'})
@@ -63,3 +57,19 @@ class BuscarJogo(HTTPMethodView):
         elif request.args.get('console'):
             jogos = await Jogos.filter(console__icontains=request.args.get('console')).values()
             return json([jogo for jogo in jogos])
+
+
+async def paginar(request, query):
+    limite = 5
+    if request.args.get('limite') and request.args.get('pagina'):
+        limite = int(request.args.get('limite'))
+        skip = limite * (int(request.args.get('pagina')) - 1)
+        return await query().limit(limite).offset(skip)
+    elif request.args.get('limite'):
+        limite = int(request.args.get('limite'))
+        return await query().limit(limite)
+    elif request.args.get('pagina'):
+        skip = limite * (int(request.args.get('pagina')) - 1)
+        return await query().limit(limite).offset(skip)
+    else:
+        return await query().limit(limite)
