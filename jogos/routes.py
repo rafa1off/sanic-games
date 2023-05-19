@@ -1,5 +1,4 @@
 from jogos.views import ListarJogos, ListarJogo, BuscarJogo
-from jogos.models import Jogos
 
 
 def router(app):

@@ -15,7 +15,11 @@ app.config.FALLBACK_ERROR_FORMAT = 'json'
 register_tortoise(
     app,
     db_url=os.getenv('CONNECTION_STRING'),
-    modules={'models': ['jogos.models']},
+    modules={
+        'models': [
+            'jogos.models'
+        ]
+    },
     generate_schemas=True
 )
 
